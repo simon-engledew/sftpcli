@@ -19,8 +19,8 @@ import (
 )
 
 var (
-	usernameFlag = kingpin.Flag("username", "SFTP username").Default(os.Getenv("SFTP_USERNAME")).String()
-	passwordFlag = kingpin.Flag("password", "SFTP password").Default(os.Getenv("SFTP_PASSWORD")).String()
+	usernameFlag = kingpin.Flag("username", "SFTP username").Required().Envar("SFTP_USERNAME").String()
+	passwordFlag = kingpin.Flag("password", "SFTP password").Required().Envar("SFTP_PASSWORD").String()
 	sizeFlag     = kingpin.Flag("size", "Max packet size").Default(strconv.Itoa(1 << 15)).Int()
 	hostFlag     = kingpin.Flag("host", "Host").Default("localhost").String()
 	portFlag     = kingpin.Flag("port", "Port").Default(strconv.Itoa(22)).Int()
