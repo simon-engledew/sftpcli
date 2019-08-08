@@ -24,6 +24,7 @@ var (
 	sizeFlag     = kingpin.Flag("size", "Max packet size").Default(strconv.Itoa(1 << 15)).Int()
 	hostFlag     = kingpin.Flag("host", "Host").Default("localhost").String()
 	portFlag     = kingpin.Flag("port", "Port").Default(strconv.Itoa(22)).Int()
+	dryRunFlag   = kingpin.Flag("dry-run", "Do not copy any items").Short('n').Bool()
 
 	cpCommand = kingpin.Command("cp", "copy a file")
 	cpSrcArg  = cpCommand.Arg("SRC", "Source").Required().String()
@@ -52,9 +53,13 @@ func cpFile(client *sftp.Client, srcInfo os.FileInfo, src, dst string, baseDir s
 	}
 
 	if _, err := client.Stat(directory); os.IsNotExist(err) {
-		err := client.MkdirAll(directory)
-		if err != nil {
-			return 0, err
+		if *dryRunFlag {
+			log.Printf("mkdir[%s]", directory)
+		} else {
+			err := client.MkdirAll(directory)
+			if err != nil {
+				return 0, err
+			}
 		}
 	}
 
@@ -65,6 +70,11 @@ func cpFile(client *sftp.Client, srcInfo os.FileInfo, src, dst string, baseDir s
 			log.Printf("[skipped, mtime+size] %s -> %s", src, dst)
 			return 0, nil
 		}
+	}
+
+	if *dryRunFlag {
+		log.Printf("[skipped, dry-run] %s -> %s", src, dst)
+		return 0, nil
 	}
 
 	log.Printf("%s -> %s", src, dst)
